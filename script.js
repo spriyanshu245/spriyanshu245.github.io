@@ -110,7 +110,157 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 // ---------- Footer year ----------
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// ---------- Live demo links (fill after deploys) ----------
+// ---------- Playground ----------
+
+// Paint range input fills
+document.querySelectorAll('.play-controls input[type="range"]').forEach(r => {
+  const paint = () => r.style.setProperty('--fill', ((r.value - r.min) / (r.max - r.min) * 100) + '%');
+  r.addEventListener('input', paint);
+  paint();
+});
+
+// Spring lab: semi-implicit Euler spring on a knob
+(function springLab() {
+  const knob = document.getElementById('springKnob');
+  const stage = document.getElementById('springStage');
+  if (!knob || !stage) return;
+  let x = 0, v = 0, target = 0, k = 120, c = 12, raf = null, maxX = 100;
+  const measure = () => { maxX = Math.max(0, stage.clientWidth - 48 - 36); target = Math.min(target, maxX); };
+  measure();
+  window.addEventListener('resize', measure);
+  const render = () => { knob.style.transform = `translateX(${x}px)`; };
+  const step = () => {
+    const dt = 1 / 60;
+    v += (-k * (x - target) - c * v) * dt;
+    x += v * dt;
+    render();
+    if (Math.abs(v) > 0.4 || Math.abs(x - target) > 0.4) {
+      raf = requestAnimationFrame(step);
+    } else {
+      x = target; v = 0; render(); raf = null;
+    }
+  };
+  const kick = () => {
+    if (raf) cancelAnimationFrame(raf);
+    if (reduceMotion) { x = target; v = 0; render(); return; }
+    raf = requestAnimationFrame(step);
+  };
+  document.getElementById('nudgeBtn').addEventListener('click', () => {
+    measure();
+    target = Math.random() * maxX;
+    kick();
+  });
+  document.getElementById('stiffRange').addEventListener('input', e => { k = +e.target.value; });
+  document.getElementById('dampRange').addEventListener('input', e => { c = +e.target.value; });
+  render();
+})();
+
+// Live chart: staggered bars + count-up labels
+(function liveChart() {
+  const chartEl = document.getElementById('chart');
+  if (!chartEl) return;
+  const sets = {
+    stars:   [42, 68, 55, 90, 74, 120, 96],
+    prs:     [12, 28, 20, 45, 38, 60, 52],
+    deploys: [8, 15, 12, 22, 30, 26, 40],
+  };
+  const bars = sets.stars.map(() => {
+    const b = document.createElement('div');
+    b.className = 'bar';
+    b.innerHTML = '<div class="bar-fill"></div><span>0</span>';
+    chartEl.appendChild(b);
+    return b;
+  });
+  const countUp = (label, from, to) => {
+    if (reduceMotion) { label.textContent = to; return; }
+    const t0 = performance.now();
+    const tick = t => {
+      const p = Math.min((t - t0) / 650, 1);
+      label.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  const renderSet = key => {
+    const data = sets[key];
+    const max = Math.max(...data);
+    bars.forEach((b, i) => {
+      const fill = b.querySelector('.bar-fill');
+      const label = b.querySelector('span');
+      fill.style.transitionDelay = (i * 55) + 'ms';
+      // force reflow so the delay applies cleanly on repeat clicks
+      void fill.offsetWidth;
+      fill.style.height = Math.max(2, (data[i] / max) * 100) + '%';
+      countUp(label, parseInt(label.textContent, 10) || 0, data[i]);
+    });
+  };
+  document.querySelectorAll('[data-set]').forEach(btn =>
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-set]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderSet(btn.dataset.set);
+    })
+  );
+  new IntersectionObserver((entries, obs) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { renderSet('stars'); obs.disconnect(); }
+    });
+  }, { threshold: 0.3 }).observe(chartEl);
+})();
+
+// Theme mixer: one hue variable re-themes the preview
+(function themeMixer() {
+  const preview = document.getElementById('themePreview');
+  const hue = document.getElementById('hueRange');
+  const glow = document.getElementById('glowSwitch');
+  if (!preview || !hue || !glow) return;
+  hue.addEventListener('input', e => preview.style.setProperty('--mix-hue', e.target.value));
+  glow.addEventListener('click', () => {
+    const on = glow.getAttribute('aria-checked') === 'true';
+    glow.setAttribute('aria-checked', String(!on));
+    preview.classList.toggle('glow', !on);
+  });
+})();
+
+// Button lab: spring switch, magnetic button, click ripple
+(function buttonLab() {
+  const demoSwitch = document.getElementById('demoSwitch');
+  if (demoSwitch) {
+    demoSwitch.addEventListener('click', () => {
+      demoSwitch.setAttribute('aria-checked', String(demoSwitch.getAttribute('aria-checked') !== 'true'));
+    });
+  }
+  const stage = document.getElementById('btnStage');
+  const magnet = document.getElementById('magnetBtn');
+  if (stage && magnet && !reduceMotion) {
+    const PULL = 26;
+    stage.addEventListener('mousemove', e => {
+      const r = magnet.getBoundingClientRect();
+      const dx = e.clientX - (r.left + r.width / 2);
+      const dy = e.clientY - (r.top + r.height / 2);
+      const dist = Math.hypot(dx, dy);
+      if (dist < 160) {
+        magnet.style.transform = `translate(${(dx / 160) * PULL}px, ${(dy / 160) * PULL}px)`;
+      } else {
+        magnet.style.transform = '';
+      }
+    });
+    stage.addEventListener('mouseleave', () => { magnet.style.transform = ''; });
+  }
+  if (magnet) {
+    magnet.addEventListener('click', e => {
+      const r = magnet.getBoundingClientRect();
+      const s = document.createElement('span');
+      s.className = 'ripple';
+      const size = Math.max(r.width, r.height);
+      s.style.width = s.style.height = size + 'px';
+      s.style.left = (e.clientX - r.left - size / 2) + 'px';
+      s.style.top = (e.clientY - r.top - size / 2) + 'px';
+      magnet.appendChild(s);
+      setTimeout(() => s.remove(), 700);
+    });
+  }
+})();
 const DEMO_URLS = {};
 document.querySelectorAll('.demo-link').forEach(a => {
   const url = DEMO_URLS[a.dataset.demo];

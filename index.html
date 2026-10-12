@@ -22,6 +22,7 @@
     <a href="#about">About</a>
     <a href="#experience">Experience</a>
     <a href="#projects">Work</a>
+    <a href="#playground">Playground</a>
     <a href="#skills">Skills</a>
     <a href="#contact" class="nav-cta">Contact</a>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark and light theme">
@@ -174,6 +175,70 @@
 
     </div>
     <p class="more-note reveal">More experiments on <a href="https://github.com/spriyanshu245" target="_blank" rel="noopener">GitHub</a>.</p>
+  </section>
+
+  <section id="playground" class="section">
+    <p class="section-eyebrow reveal">Playground</p>
+    <h2 class="section-title reveal">Don't take my word for it.<br>Push the buttons.</h2>
+    <p class="playground-lead reveal">Interactive studies in motion, data and theming — hand-rolled, no libraries. This is what I do all day.</p>
+    <div class="play-grid">
+
+      <article class="play-card reveal">
+        <p class="play-kicker">Motion · Spring physics</p>
+        <h3>Spring lab</h3>
+        <div class="spring-stage" id="springStage">
+          <div class="spring-track"></div>
+          <div class="spring-knob" id="springKnob"></div>
+        </div>
+        <div class="play-controls">
+          <label>Stiffness <input type="range" id="stiffRange" min="20" max="300" value="120" aria-label="Spring stiffness"></label>
+          <label>Damping <input type="range" id="dampRange" min="2" max="30" value="12" aria-label="Spring damping"></label>
+        </div>
+        <button class="btn btn-secondary btn-sm play-btn" id="nudgeBtn">Nudge it</button>
+        <p class="play-note">Semi-implicit Euler integration at 60fps. Drop the damping and it gets wobbly.</p>
+      </article>
+
+      <article class="play-card reveal">
+        <p class="play-kicker">Data · Animated transitions</p>
+        <h3>Live chart</h3>
+        <div class="chart" id="chart" role="img" aria-label="Animated bar chart of developer activity"></div>
+        <div class="play-controls row">
+          <button class="chip active" data-set="stars">Stars</button>
+          <button class="chip" data-set="prs">Pull requests</button>
+          <button class="chip" data-set="deploys">Deploys</button>
+        </div>
+        <p class="play-note">Staggered height transitions with count-up labels. Zero chart libraries.</p>
+      </article>
+
+      <article class="play-card reveal">
+        <p class="play-kicker">Systems · Live theming</p>
+        <h3>Theme mixer</h3>
+        <div class="theme-preview glow" id="themePreview">
+          <div class="tp-avatar"></div>
+          <div class="tp-lines" aria-hidden="true"><span></span><span></span></div>
+          <button class="tp-btn" type="button">Follow</button>
+        </div>
+        <div class="play-controls">
+          <label>Accent hue <input type="range" id="hueRange" min="0" max="360" value="212" aria-label="Accent hue"></label>
+          <div class="switch-row">
+            <span>Glow</span>
+            <button class="switch" id="glowSwitch" role="switch" aria-checked="true" aria-label="Toggle glow"><span></span></button>
+          </div>
+        </div>
+        <p class="play-note">One CSS variable re-themes the whole preview — the design-token trick.</p>
+      </article>
+
+      <article class="play-card reveal">
+        <p class="play-kicker">Feel · Micro-interactions</p>
+        <h3>Button lab</h3>
+        <div class="btn-stage" id="btnStage">
+          <button class="magnet-btn" id="magnetBtn" type="button">Hover me</button>
+          <button class="switch" id="demoSwitch" role="switch" aria-checked="false" aria-label="Demo toggle switch"><span></span></button>
+        </div>
+        <p class="play-note">Magnetic hover, spring-loaded switch, click ripple. The last 4 pixels matter.</p>
+      </article>
+
+    </div>
   </section>
 
   <section id="skills" class="section">
